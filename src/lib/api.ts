@@ -64,8 +64,8 @@ export interface SessionInfo {
 
 export interface AppSettings {
   llm_provider: string;
-  gemini_model: string;
-  mistral_model: string;
+  gemini_model?: string;
+  mistral_model?: string;
   answering_method: string;
   system_prompt: string;
   github_token?: string;

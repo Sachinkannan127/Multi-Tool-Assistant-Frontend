@@ -1433,7 +1433,7 @@ function SettingsModal({
     </div>
   );
 
-  const select = (value: string, onChange: (v: string) => void, options: { value: string; label: string }[]) => (
+  const select = (value: string | undefined, onChange: (v: string) => void, options: { value: string; label: string }[]) => (
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
