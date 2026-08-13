@@ -23,8 +23,10 @@ interface TaskRowData {
   key: string;
   label: string;
   amount: string;
-  status: "pending" | "running" | "completed" | "failed";
+  status?: "pending" | "running" | "completed" | "failed";
   details: TaskDetail[];
+  badge?: React.ReactNode;
+  pill?: React.ReactNode;
 }
 
 interface TaskRowsProps {
