@@ -19,12 +19,12 @@ export interface ChatRequest {
   temperature?: number;
   stream?: boolean;
   web_search?: boolean;
-  speed_mode?: 'fast' | 'slow';
+  speed_mode?: 'fast' | 'slow' | 'pro';
   require_approval?: boolean;
 }
 
 export interface SSEEvent {
-  type: 'tool_start' | 'tool_end' | 'token' | 'done' | 'error' | 'tool_approval_request' | 'research_step';
+  type: 'tool_start' | 'tool_end' | 'token' | 'done' | 'error' | 'tool_approval_request' | 'research_step' | 'fallback';
   tool?: string;
   emoji?: string;
   label?: string;
@@ -36,6 +36,9 @@ export interface SSEEvent {
   approval_id?: string;
   message?: string;
   session_id?: string;
+  from?: string;
+  to?: string;
+  reason?: string;
 }
 
 export interface UploadResponse {
@@ -62,6 +65,7 @@ export interface SessionInfo {
 export interface AppSettings {
   llm_provider: string;
   gemini_model: string;
+  mistral_model: string;
   answering_method: string;
   system_prompt: string;
   github_token?: string;

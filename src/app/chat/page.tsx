@@ -325,7 +325,7 @@ function ChatView({
   const [toolSteps, setToolSteps] = useState<ToolStep[]>([]);
   const [requireApproval, setRequireApproval] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; sessionId: string } | null>(null);
-  const [speedMode, setSpeedMode] = useState<'fast' | 'slow'>('fast');
+  const [speedMode, setSpeedMode] = useState<'fast' | 'slow' | 'pro'>('fast');
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(initialSession?.session_id ?? null);
   const abortRef = useRef<AbortController | null>(null);
@@ -496,6 +496,11 @@ function ChatView({
             setIsStreaming(false);
             setActiveTools([]);
             setToolSteps([]);
+          } else if (event.type === 'fallback') {
+            setMessages(prev => [
+              ...prev,
+              { role: 'assistant', content: `> ⚠️ **Fallback triggered:** The \`${event.from}\` model encountered an error or rate limit. Automatically falling back to \`${event.to}\`...`, timestamp: new Date().toISOString() },
+            ]);
           }
         },
         controller.signal,
@@ -663,8 +668,8 @@ function GeminiInput({
   onUpload: (f: File) => void;
   isStreaming: boolean;
   disabled: boolean;
-  speedMode: 'fast' | 'slow';
-  onSpeedModeChange: (m: 'fast' | 'slow') => void;
+  speedMode: 'fast' | 'slow' | 'pro';
+  onSpeedModeChange: (m: 'fast' | 'slow' | 'pro') => void;
   requireApproval: boolean;
   onRequireApprovalChange: (b: boolean) => void;
   webSearchEnabled: boolean;
@@ -673,7 +678,6 @@ function GeminiInput({
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const isFast = speedMode === 'fast';
 
   const autoResize = () => {
     const el = textareaRef.current;
@@ -706,18 +710,22 @@ function GeminiInput({
 
           {/* Speed mode toggle */}
           <button
-            onClick={() => onSpeedModeChange(isFast ? 'slow' : 'fast')}
-            title={isFast ? 'Fast mode: Groq (click to switch to Slow/Gemini)' : 'Slow mode: Gemini (click to switch to Fast/Groq)'}
+            onClick={() => onSpeedModeChange(speedMode === 'fast' ? 'slow' : speedMode === 'slow' ? 'pro' : 'fast')}
+            title={speedMode === 'fast' ? 'Fast mode: Groq (click for Slow/Gemini)' : speedMode === 'slow' ? 'Slow mode: Gemini (click for Pro/Mistral)' : 'Pro mode: Mistral (click for Fast/Groq)'}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none ${
-              isFast
+              speedMode === 'fast'
                 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
-                : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
+                : speedMode === 'slow'
+                ? 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
+                : 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
             }`}
           >
-            {isFast ? (
+            {speedMode === 'fast' ? (
               <><Zap className="w-3 h-3" /> Fast</>
-            ) : (
+            ) : speedMode === 'slow' ? (
               <><Brain className="w-3 h-3" /> Slow</>
+            ) : (
+              <><Sparkles className="w-3 h-3" /> Pro</>
             )}
           </button>
 
@@ -1479,12 +1487,20 @@ function SettingsModal({
               {field('LLM Provider', select(local.llm_provider, v => setLocal(l => ({ ...l, llm_provider: v })), [
                 { value: 'google', label: 'Google Gemini' },
                 { value: 'groq', label: 'Groq (Llama 3)' },
+                { value: 'mistral', label: 'Mistral AI' },
               ]))}
 
               {local.llm_provider === 'google' && field('Gemini Model', select(local.gemini_model, v => setLocal(l => ({ ...l, gemini_model: v })), [
                 { value: 'gemini-2.5-flash-lite', label: 'gemini-2.5-flash-lite (Free / Fast)' },
                 { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash' },
                 { value: 'gemini-2.0-flash-lite', label: 'gemini-2.0-flash-lite' },
+              ]))}
+
+              {local.llm_provider === 'mistral' && field('Mistral Model', select(local.mistral_model, v => setLocal(l => ({ ...l, mistral_model: v })), [
+                { value: 'mistral-small-latest', label: 'Mistral Small' },
+                { value: 'mistral-large-latest', label: 'Mistral Large' },
+                { value: 'codestral-latest', label: 'Codestral' },
+                { value: 'pixtral-large-latest', label: 'Pixtral Large' },
               ]))}
 
               {field('Answering Method', select(local.answering_method, v => setLocal(l => ({ ...l, answering_method: v })), [
