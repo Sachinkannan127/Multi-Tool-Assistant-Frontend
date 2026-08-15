@@ -1628,7 +1628,7 @@ function SettingsModal({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-[var(--border-subtle)]">
-          {tab === 'prefs' ? (
+          {tab !== 'memory' ? (
             <>
               <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-medium text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] transition-colors">
                 Cancel
